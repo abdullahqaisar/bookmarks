@@ -105,7 +105,7 @@ describe('AppController (e2e)', () => {
 
   describe('User', () => {
     describe('Get me', () => {
-      it('shoudl get current user', () => {
+      it('should get current user', () => {
         return request(app.getHttpServer())
           .get('/users/me')
           .set(
