@@ -11,6 +11,7 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from 'src/auth/dto';
+import { EditUserDto } from 'src/user/dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -116,7 +117,32 @@ describe('AppController (e2e)', () => {
       });
     });
 
-    describe('Edit user', () => {});
+    describe('Edit user', () => {
+      const dto: EditUserDto = {
+        firstName: 'Abdull',
+        email: 'abd@gm.com',
+      };
+      it('should edit user', () => {
+        return request(app.getHttpServer())
+          .patch('/users')
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .send(dto)
+          .expect(HttpStatus.OK)
+          .expect((response) => {
+            expect(response.body).toHaveProperty(
+              'firstName',
+              dto.firstName,
+            );
+            expect(response.body).toHaveProperty(
+              'email',
+              dto.email,
+            );
+          });
+      });
+    });
   });
 
   describe('Bookmarks', () => {
