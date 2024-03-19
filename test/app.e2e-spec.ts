@@ -12,6 +12,10 @@ import { AppModule } from './../src/app.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from 'src/auth/dto';
 import { EditUserDto } from 'src/user/dto';
+import {
+  CreateBookmarkDto,
+  EditBookmarkDto,
+} from 'src/bookmark/dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -146,14 +150,122 @@ describe('AppController (e2e)', () => {
   });
 
   describe('Bookmarks', () => {
-    describe('Create Bookmarks', () => {});
+    let bookmarkId: number;
+    describe('Get empty bookmarks', () => {
+      it('should get bookmarks', () => {
+        return request(app.getHttpServer())
+          .get('/bookmarks')
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .expect(HttpStatus.OK)
+          .expect((response) => {
+            expect(response.body).toEqual([]);
+          });
+      });
+    });
+    describe('Create Bookmarks', () => {
+      const dto: CreateBookmarkDto = {
+        title: 'First Bookmark',
+        link: 'www.vid.com',
+      };
 
-    describe('Get bookmarks', () => {});
+      it('should create bookmark', async () => {
+        const response = await request(
+          app.getHttpServer(),
+        )
+          .post('/bookmarks')
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .send(dto)
+          .expect(HttpStatus.CREATED);
+        expect(response.body).toHaveProperty(
+          'title',
+          dto.title,
+        );
+        bookmarkId = response.body.id;
+      });
+    });
 
-    describe('Get bookmark by id', () => {});
+    describe('Get bookmarks', () => {
+      it('should get bookmarks', () => {
+        return request(app.getHttpServer())
+          .get('/bookmarks')
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .expect(HttpStatus.OK)
+          .expect((response) => {
+            expect(response.body).toHaveLength(1);
+          });
+      });
+    });
 
-    describe('Edit Bookmark', () => {});
+    describe('Get bookmark by id', () => {
+      it('should get bookmarks by id', () => {
+        return request(app.getHttpServer())
+          .get(`/bookmarks/${bookmarkId}`)
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .expect(HttpStatus.OK)
+          .expect((response) => {
+            expect(response.body.id).toEqual(
+              bookmarkId,
+            );
+          });
+      });
+    });
 
-    describe('Delete user', () => {});
+    describe('Edit Bookmark by id', () => {
+      const dto: EditBookmarkDto = {
+        description: 'this is a desc',
+      };
+      it('should create bookmark', async () => {
+        const response = await request(
+          app.getHttpServer(),
+        )
+          .patch(`/bookmarks/${bookmarkId}`)
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .send(dto)
+          .expect(HttpStatus.OK);
+        expect(response.body.description).toEqual(
+          dto.description,
+        );
+      });
+    });
+
+    describe('Delete user', () => {
+      it('should delete bookmark', async () => {
+        return request(app.getHttpServer())
+          .delete(`/bookmarks/${bookmarkId}`)
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .expect(HttpStatus.NO_CONTENT);
+      });
+
+      it('should empty get bookmarks', () => {
+        return request(app.getHttpServer())
+          .get('/bookmarks')
+          .set(
+            'Authorization',
+            `Bearer ${access_token}`,
+          )
+          .expect(HttpStatus.OK)
+          .expect((response) => {
+            expect(response.body).toEqual([]);
+          });
+      });
+    });
   });
 });
